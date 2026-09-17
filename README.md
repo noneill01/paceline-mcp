@@ -30,6 +30,7 @@ Use any MCP client that supports local stdio servers. The server command is `nod
 | Tool | Purpose |
 | --- | --- |
 | `get_athlete_training_snapshot` | Athlete profile, recent workouts, recovery signals |
+| `get_todays_workout` | Every available field for today's planned and completed TrainingPeaks workouts |
 | `explain_training_load` | Load trend and coaching implication |
 | `assess_readiness` | Green/amber/red readiness explanation |
 | `identify_training_risks` | Conservative load and recovery flags |

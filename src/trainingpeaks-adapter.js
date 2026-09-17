@@ -54,6 +54,24 @@ export async function getTrainingPeaksSnapshot() {
   });
 }
 
+export async function getTrainingPeaksTodaysWorkout() {
+  return withTrainingPeaks(async (get) => {
+    const today = date();
+    const [planned, completed] = await Promise.all([
+      get("tp_get_workouts", { start_date: today, end_date: today, type: "planned" }),
+      get("tp_get_workouts", { start_date: today, end_date: today, type: "completed" })
+    ]);
+
+    return {
+      source: "TrainingPeaks",
+      date: today,
+      planned: planned.workouts ?? [],
+      completed: completed.workouts ?? [],
+      note: "Each workout is returned with every field made available by the connected TrainingPeaks MCP, unchanged."
+    };
+  });
+}
+
 export async function getTrainingPeaksLoad() {
   return withTrainingPeaks(async (get) => {
     const [fitness, completed] = await Promise.all([
