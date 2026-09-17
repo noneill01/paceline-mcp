@@ -1,0 +1,16 @@
+# Dependencies and generated output
+node_modules/
+training-dashboard/node_modules/
+training-dashboard/.next/
+training-dashboard/dist/
+training-dashboard/.wrangler/
+
+# Local provider integrations, credentials, and cloned third-party servers
+work/
+.env
+.env.*
+!.env.example
+
+# Local tooling
+.sites-runtime/
+.DS_Store
