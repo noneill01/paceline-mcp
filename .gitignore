@@ -1,5 +1,6 @@
 # Dependencies and generated output
 node_modules/
+.local-data/
 training-dashboard/node_modules/
 training-dashboard/.next/
 training-dashboard/dist/

@@ -43,6 +43,8 @@ Use any MCP client that supports local stdio servers. The server command is `nod
 | `get_combined_readiness` | TrainingPeaks form plus only the Garmin recovery signals actually available |
 | `get_strava_connection_status` | Safe status of the official Strava connector; no credentials exposed |
 | `list_strava_workouts` | Normalized Strava activities after OAuth configuration |
+| `sync_private_alpha_data` | Persist merged provider data to encrypted local storage; never writes to providers |
+| `list_stored_workouts` | Read the encrypted local private-alpha store |
 | `explain_training_load` | Load trend and coaching implication |
 | `assess_readiness` | Green/amber/red readiness explanation |
 | `identify_training_risks` | Conservative load and recovery flags |
@@ -51,6 +53,6 @@ Use any MCP client that supports local stdio servers. The server command is `nod
 ## Production path
 
 1. Replace the local community TrainingPeaks and Garmin adapters with approved provider APIs before offering the service to other athletes.
-2. Store per-user OAuth credentials and consent securely, then add scheduled data synchronisation.
+2. Add per-user OAuth credentials and consent securely, then move the encrypted local store to a managed production database with scheduled synchronisation.
 3. Improve matching with provider IDs, start time and route comparison before making coaching decisions from merged workouts.
 4. Keep `draft` and `publish` separate. A publish tool should require explicit athlete confirmation and produce an audit record.

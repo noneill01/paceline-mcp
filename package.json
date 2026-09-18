@@ -7,7 +7,7 @@
     "start": "node src/server.js",
     "start:trainingpeaks": "node src/trainingpeaks-server.js",
     "inspect": "npx @modelcontextprotocol/inspector node src/server.js",
-    "test": "node test/smoke.mjs && node test/training-model.mjs",
+    "test": "node test/smoke.mjs && node test/training-model.mjs && node test/storage.mjs",
     "test:trainingpeaks": "node test/trainingpeaks-smoke.mjs"
   },
   "dependencies": {
