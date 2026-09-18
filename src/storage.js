@@ -47,6 +47,11 @@ export function openEncryptedStore({ databasePath = process.env.TRAINING_COACH_D
       workout_count INTEGER NOT NULL DEFAULT 0,
       message TEXT
     ) STRICT;
+    CREATE TABLE IF NOT EXISTS provider_connections (
+      provider TEXT PRIMARY KEY,
+      payload TEXT NOT NULL,
+      updated_at TEXT NOT NULL
+    ) STRICT;
   `);
   const key = Buffer.isBuffer(encryptionKey) ? encryptionKey : Buffer.from(encryptionKey, "base64");
   if (key.length !== 32) throw new Error("Storage encryption key must be 32 bytes.");
@@ -68,6 +73,13 @@ export function openEncryptedStore({ databasePath = process.env.TRAINING_COACH_D
     },
     latestSync() {
       return database.prepare("SELECT started_at, finished_at, status, providers, workout_count, message FROM sync_runs ORDER BY id DESC LIMIT 1").get() ?? null;
+    },
+    setConnection(provider, connection) {
+      database.prepare("INSERT INTO provider_connections (provider, payload, updated_at) VALUES (?, ?, ?) ON CONFLICT(provider) DO UPDATE SET payload=excluded.payload, updated_at=excluded.updated_at").run(provider, encrypt(connection, key), new Date().toISOString());
+    },
+    getConnection(provider) {
+      const row = database.prepare("SELECT payload FROM provider_connections WHERE provider = ?").get(provider);
+      return row ? decrypt(row.payload, key) : null;
     },
     close() { database.close(); }
   };

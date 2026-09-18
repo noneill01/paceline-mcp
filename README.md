@@ -27,7 +27,7 @@ The pilot calls only fixed allow-lists of read tools. It cannot publish, change,
 
 ### Strava
 
-The Strava connector uses the official OAuth refresh-token flow. Create a Strava API application, complete its OAuth authorization, then place its client ID, client secret and refresh token in a local `.env` file using `.env.example` as the template. The MCP never returns those values. Until they are configured, `get_strava_connection_status` reports exactly what is missing.
+The Strava connector uses the official OAuth refresh-token flow. Create a Strava API application, place only its client ID and client secret in local `.env`, then run `npm run authorize:strava`. It prints the approval URL and stores the resulting refresh token in encrypted local storage. The MCP never returns credentials. Until this is complete, `get_strava_connection_status` reports exactly what is missing.
 
 Use any MCP client that supports local stdio servers. The server command is `node` and the argument is the absolute path to `src/server.js`.
 

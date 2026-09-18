@@ -11,5 +11,7 @@ const result = store.recordSync({ providers: ["Garmin Connect"], workouts: [{ id
 assert.equal(result.workoutCount, 1);
 assert.equal(store.listWorkouts()[0].title, "Test");
 assert.equal(store.latestSync().status, "succeeded");
+store.setConnection("strava", { refreshToken: "test-token" });
+assert.equal(store.getConnection("strava").refreshToken, "test-token");
 store.close();
 console.log("Encrypted storage test passed: a sync record and encrypted workout round-trip correctly.");

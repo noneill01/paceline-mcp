@@ -6,6 +6,7 @@
   "scripts": {
     "start": "node --env-file-if-exists=.env src/server.js",
     "start:trainingpeaks": "node --env-file-if-exists=.env src/trainingpeaks-server.js",
+    "authorize:strava": "node --env-file=.env scripts/strava-authorize.mjs",
     "inspect": "npx @modelcontextprotocol/inspector node src/server.js",
     "test": "node test/smoke.mjs && node test/training-model.mjs && node test/storage.mjs",
     "test:trainingpeaks": "node test/trainingpeaks-smoke.mjs"

@@ -1,4 +1,5 @@
 import { normalizeStravaActivity } from "./training-model.js";
+import { openEncryptedStore } from "./storage.js";
 
 const configuration = () => ({
   clientId: process.env.STRAVA_CLIENT_ID,
@@ -6,22 +7,40 @@ const configuration = () => ({
   refreshToken: process.env.STRAVA_REFRESH_TOKEN
 });
 
+const storedConnection = () => {
+  try {
+    const store = openEncryptedStore();
+    const connection = store.getConnection("strava");
+    store.close();
+    return connection;
+  } catch { return null; }
+};
+
 export function getStravaConnectionStatus() {
   const config = configuration();
+  const connection = storedConnection();
   return {
     provider: "Strava",
-    connected: Boolean(config.clientId && config.clientSecret && config.refreshToken),
-    missing: [!config.clientId && "STRAVA_CLIENT_ID", !config.clientSecret && "STRAVA_CLIENT_SECRET", !config.refreshToken && "STRAVA_REFRESH_TOKEN"].filter(Boolean),
-    note: "Uses Strava's official OAuth refresh-token flow. Credentials are read only from environment variables and are never returned by this MCP."
+    connected: Boolean(config.clientId && config.clientSecret && (config.refreshToken || connection?.refreshToken)),
+    missing: [!config.clientId && "STRAVA_CLIENT_ID", !config.clientSecret && "STRAVA_CLIENT_SECRET", !config.refreshToken && !connection?.refreshToken && "Strava authorization"].filter(Boolean),
+    note: "Uses Strava's official OAuth refresh-token flow. Refresh tokens are encrypted locally and are never returned by this MCP."
   };
 }
 
 async function accessToken() {
   const config = configuration();
-  if (!config.clientId || !config.clientSecret || !config.refreshToken) throw new Error("Strava is not connected. Configure the missing values reported by get_strava_connection_status.");
-  const response = await fetch("https://www.strava.com/oauth/token", { method: "POST", headers: { "content-type": "application/x-www-form-urlencoded" }, body: new URLSearchParams({ client_id: config.clientId, client_secret: config.clientSecret, refresh_token: config.refreshToken, grant_type: "refresh_token" }) });
+  const connection = storedConnection();
+  const refreshToken = connection?.refreshToken ?? config.refreshToken;
+  if (!config.clientId || !config.clientSecret || !refreshToken) throw new Error("Strava is not connected. Configure the missing values reported by get_strava_connection_status.");
+  const response = await fetch("https://www.strava.com/oauth/token", { method: "POST", headers: { "content-type": "application/x-www-form-urlencoded" }, body: new URLSearchParams({ client_id: config.clientId, client_secret: config.clientSecret, refresh_token: refreshToken, grant_type: "refresh_token" }) });
   if (!response.ok) throw new Error(`Strava token refresh failed (${response.status}).`);
-  return (await response.json()).access_token;
+  const token = await response.json();
+  if (token.refresh_token && token.refresh_token !== refreshToken) {
+    const store = openEncryptedStore();
+    try { store.setConnection("strava", { refreshToken: token.refresh_token, athlete: token.athlete ?? null }); }
+    finally { store.close(); }
+  }
+  return token.access_token;
 }
 
 export async function listStravaWorkouts({ after, before } = {}) {
