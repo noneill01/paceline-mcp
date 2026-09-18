@@ -1,6 +1,7 @@
 import { fileURLToPath } from "node:url";
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js";
+import { normalizeTrainingPeaksWorkout } from "./training-model.js";
 
 const trainingPeaksRoot = new URL("../work/trainingpeaks-mcp/", import.meta.url);
 const pythonPath = fileURLToPath(new URL(".venv/bin/python", trainingPeaksRoot));
@@ -69,6 +70,16 @@ export async function getTrainingPeaksTodaysWorkout() {
       completed: completed.workouts ?? [],
       note: "Each workout is returned with every field made available by the connected TrainingPeaks MCP, unchanged."
     };
+  });
+}
+
+export async function listTrainingPeaksWorkouts(days = 28) {
+  return withTrainingPeaks(async (get) => {
+    const [planned, completed] = await Promise.all([
+      get("tp_get_workouts", { start_date: date(-days), end_date: date(), type: "planned" }),
+      get("tp_get_workouts", { start_date: date(-days), end_date: date(), type: "completed" })
+    ]);
+    return { source: "TrainingPeaks", workouts: [...(planned.workouts ?? []), ...(completed.workouts ?? [])].map(normalizeTrainingPeaksWorkout) };
   });
 }
 

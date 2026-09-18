@@ -1,9 +1,15 @@
 import { fileURLToPath } from "node:url";
+import { promisify } from "node:util";
+import { execFile } from "node:child_process";
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js";
+import { normalizeGarminActivity } from "./training-model.js";
 
 const garminRoot = new URL("../work/garmin-mcp/", import.meta.url);
 const commandPath = fileURLToPath(new URL(".venv/bin/garmin-mcp", garminRoot));
+const pythonPath = fileURLToPath(new URL(".venv/bin/python", garminRoot));
+const routeScript = fileURLToPath(new URL("../scripts/garmin-route.py", import.meta.url));
+const execFileAsync = promisify(execFile);
 
 const isoDate = (offsetDays = 0) => {
   const value = new Date();
@@ -46,5 +52,28 @@ export async function getGarminTrainingSnapshot() {
       recovery: { heartRate, hrv, restingHeartRate, sleep, stress },
       note: "Only signals present in Garmin Connect are returned. Empty values are kept empty rather than estimated."
     };
+  });
+}
+
+async function getRoute(activityId) {
+  const { stdout } = await execFileAsync(pythonPath, [routeScript, String(activityId)], { maxBuffer: 2_000_000 });
+  const start = stdout.indexOf("{");
+  if (start < 0) return null;
+  const payload = JSON.parse(stdout.slice(start));
+  return payload.points.length ? { points: payload.points } : null;
+}
+
+export async function getGarminWorkoutDetail(activityId) {
+  return withGarmin(async (get) => {
+    const [activity, route] = await Promise.all([get("get_activity", { activity_id: activityId }), getRoute(activityId)]);
+    const workout = normalizeGarminActivity({ ...activity, route });
+    return { source: "Garmin Connect", workout, note: route ? "Route points were recorded by Garmin." : "No GPS route was recorded for this activity." };
+  });
+}
+
+export async function listGarminWorkouts(days = 28) {
+  return withGarmin(async (get) => {
+    const page = await get("get_activities_by_date", { start_date: isoDate(-days), end_date: isoDate() });
+    return { source: "Garmin Connect", workouts: (page.activities ?? []).map(normalizeGarminActivity) };
   });
 }
