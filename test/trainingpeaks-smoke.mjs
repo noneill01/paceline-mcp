@@ -10,7 +10,7 @@ const client = new Client({ name: "training-coach-live-smoke-test", version: "0.
 try {
   await client.connect(transport);
   const { tools } = await client.listTools();
-  assert.equal(tools.length, 6, "expected six combined coaching tools");
+  assert.equal(tools.length, 7, "expected seven combined coaching tools");
   const result = await client.callTool({ name: "explain_training_load", arguments: {} });
   const payload = JSON.parse(result.content[0].text);
   assert.equal(payload.source, "TrainingPeaks");
