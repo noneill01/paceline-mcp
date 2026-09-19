@@ -1,5 +1,7 @@
 # PaceLine Local MCP
 
+[![CI](https://github.com/noneill01/paceline-mcp/actions/workflows/ci.yml/badge.svg)](https://github.com/noneill01/paceline-mcp/actions/workflows/ci.yml) [![Release](https://img.shields.io/github/v/release/noneill01/paceline-mcp)](https://github.com/noneill01/paceline-mcp/releases) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+
 PaceLine Local is an early-stage, local-first MCP server for endurance-training data. It is for athletes and developers who want to import their own activity files, keep them on their own computer, and analyse them through MCP-compatible AI clients.
 
 It currently imports FIT and TCX files, stores canonical activity data locally, detects duplicate imports, and exposes training summaries and load analysis. It is not a hosted service, a medical device, or a production provider-sync product.
@@ -17,8 +19,6 @@ It currently imports FIT and TCX files, stores canonical activity data locally, 
 ## Install
 
 PaceLine requires Node.js 22.5 or newer. From a clean checkout:
-
-Strava is intentionally not included: its current API policy reserves MCP access to Strava's own official MCP. Athletes who use Strava should connect that official MCP directly to their AI client rather than route Strava data through PaceLine.
 
 ```sh
 npm install
@@ -41,6 +41,21 @@ paceline serve
 ```
 
 Configure your MCP client with command `paceline` and argument `serve`. `paceline-mcp` is retained as an alias.
+
+## MCP client configuration
+
+Use this as a copy-paste starting point for an MCP client that uses the standard local `stdio` configuration. Client settings may use a different enclosing key or file, but the command and arguments are the same.
+
+```json
+{
+  "mcpServers": {
+    "paceline": {
+      "command": "paceline",
+      "args": ["serve"]
+    }
+  }
+}
+```
 
 Example import:
 
@@ -66,6 +81,12 @@ paceline import ~/Downloads/activities
 PaceLine reads FIT and TCX sessions, laps, samples, and available HR/power/cadence/elevation metrics into an encrypted local activity store. A SHA-256 file hash prevents exact duplicate files; near-identical activities from different exports are flagged as probable duplicates. GPX import is planned later.
 
 Set `PACELINE_FTP_WATTS` in `~/.paceline/.env` to enable power-derived intensity factor, load, CTL, ATL, and TSB where a FIT file does not already provide training stress. PaceLine leaves these metrics unavailable when it lacks a defensible input.
+
+## Provider support
+
+- FIT and TCX file/folder imports are supported locally.
+- Strava is intentionally not included: its current API policy reserves MCP access to Strava's own official MCP. Athletes who use Strava should connect that official MCP directly to their AI client rather than route Strava data through PaceLine.
+- Garmin and TrainingPeaks sync are planned only through approved provider integrations. See [experimental adapter notes](docs/EXPERIMENTAL.md) for the current boundaries.
 
 ## Privacy and security
 

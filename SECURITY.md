@@ -4,4 +4,4 @@ PaceLine Local is designed to keep imported training data on the user's computer
 
 Do not include credentials, cookies, exported activity files, location traces, or other personal data in issues, pull requests, or logs.
 
-To report a potential vulnerability, contact the repository owner privately rather than opening a public issue. Include a minimal reproduction that uses no real credentials or personal fitness data.
+To report a potential vulnerability, use [GitHub Private Vulnerability Reporting](https://github.com/noneill01/paceline-mcp/security/advisories/new) rather than opening a public issue. Include a minimal reproduction that uses no real credentials or personal fitness data.
