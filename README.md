@@ -18,9 +18,11 @@ It currently imports FIT and TCX files, stores canonical activity data locally, 
 
 ## Install
 
-PaceLine requires Node.js 22.5 or newer. From a clean checkout:
+PaceLine requires Node.js 22.5 or newer. From a terminal:
 
 ```sh
+git clone https://github.com/noneill01/paceline-mcp.git
+cd paceline-mcp
 npm install
 npm link
 paceline init
@@ -102,7 +104,7 @@ See [SECURITY.md](SECURITY.md) for reporting guidance.
 - Local duration, distance, load, CTL, ATL, TSB, and period comparison when source data or configured FTP supports it.
 - Read-only MCP tools for recent training, individual activities, summaries, and training load.
 
-Advanced and experimental provider-adapter notes are in [docs/EXPERIMENTAL.md](docs/EXPERIMENTAL.md). The local file-import workflow above is the supported v0.1.0 path.
+Advanced and experimental provider-adapter notes are in [docs/EXPERIMENTAL.md](docs/EXPERIMENTAL.md). The local file-import workflow above is the supported local workflow.
 
 ## Tools
 

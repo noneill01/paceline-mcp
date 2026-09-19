@@ -1,6 +1,6 @@
 # Experimental provider adapters
 
-PaceLine Local v0.1.0 supports FIT and TCX import as its supported, privacy-first workflow.
+PaceLine Local supports FIT and TCX import as its supported, privacy-first workflow.
 
 The repository also retains local Garmin and TrainingPeaks adapters from the original personal pilot. They require separately installed local connector projects and are not a supported distribution path, public integration, or substitute for approved provider APIs.
 
