@@ -1,13 +1,15 @@
 import { fileURLToPath } from "node:url";
+import { resolve } from "node:path";
 import { promisify } from "node:util";
 import { execFile } from "node:child_process";
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js";
 import { normalizeGarminActivity } from "./training-model.js";
 
-const garminRoot = new URL("../work/garmin-mcp/", import.meta.url);
-const commandPath = fileURLToPath(new URL(".venv/bin/garmin-mcp", garminRoot));
-const pythonPath = fileURLToPath(new URL(".venv/bin/python", garminRoot));
+const bundledGarminRoot = fileURLToPath(new URL("../work/garmin-mcp/", import.meta.url));
+const garminRoot = resolve(process.env.PACELINE_GARMIN_MCP_PATH || bundledGarminRoot);
+const commandPath = resolve(garminRoot, ".venv/bin/garmin-mcp");
+const pythonPath = resolve(garminRoot, ".venv/bin/python");
 const routeScript = fileURLToPath(new URL("../scripts/garmin-route.py", import.meta.url));
 const execFileAsync = promisify(execFile);
 

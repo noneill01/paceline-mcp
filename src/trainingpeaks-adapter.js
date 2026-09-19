@@ -1,11 +1,13 @@
 import { fileURLToPath } from "node:url";
+import { resolve } from "node:path";
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js";
 import { normalizeTrainingPeaksWorkout } from "./training-model.js";
 
-const trainingPeaksRoot = new URL("../work/trainingpeaks-mcp/", import.meta.url);
-const pythonPath = fileURLToPath(new URL(".venv/bin/python", trainingPeaksRoot));
-const commandPath = fileURLToPath(new URL(".venv/bin/tp-mcp", trainingPeaksRoot));
+const bundledTrainingPeaksRoot = fileURLToPath(new URL("../work/trainingpeaks-mcp/", import.meta.url));
+const trainingPeaksRoot = resolve(process.env.PACELINE_TRAININGPEAKS_MCP_PATH || bundledTrainingPeaksRoot);
+const pythonPath = resolve(trainingPeaksRoot, ".venv/bin/python");
+const commandPath = resolve(trainingPeaksRoot, ".venv/bin/tp-mcp");
 
 const date = (offsetDays = 0) => {
   const value = new Date();

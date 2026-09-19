@@ -10,7 +10,47 @@ A read-only MCP service for exploring an adaptive endurance-training coach. It c
 - Recovery signals are reported only when a provider supplies them.
 - Plan creation is a **draft** action; publishing to a calendar is intentionally outside this first version.
 
-## Run locally
+## PaceLine Local MCP
+
+PaceLine can be used as a private, local-first MCP: activity data and encrypted provider credentials stay on the athlete's computer. The package is not published yet, but the local command-line experience is ready to test from this repository.
+
+```sh
+npm install
+npm link
+paceline-mcp init
+```
+
+`init` creates `~/.paceline/.env` with a new local encryption key and a private local database. It never uploads this file or its contents.
+
+Run a safe configuration check at any time:
+
+```sh
+paceline-mcp doctor
+```
+
+To start the MCP in Codex or another local MCP client:
+
+```sh
+paceline-mcp serve
+```
+
+Configure your MCP client with command `paceline-mcp` and argument `serve`.
+
+### Local Strava
+
+Add the client ID and client secret for a Strava application you control to `~/.paceline/.env`, then run:
+
+```sh
+paceline-mcp authorize-strava
+```
+
+The browser approval flow saves the refresh token in the encrypted local database. The command never prints it.
+
+### Experimental local connectors
+
+The Garmin and TrainingPeaks connectors are retained for personal experimentation, but are not a distributable public integration method. If an advanced user has installed compatible local connector projects, they can configure their directory paths in `~/.paceline/.env` with `PACELINE_GARMIN_MCP_PATH` and `PACELINE_TRAININGPEAKS_MCP_PATH`. Do not put browser cookies or account passwords in that file.
+
+## Development pilot
 
 ```sh
 npm install
