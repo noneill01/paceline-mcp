@@ -53,7 +53,11 @@ Use any MCP client that supports local stdio servers. The server command is `nod
 
 ## Production path
 
-1. Replace the local community TrainingPeaks and Garmin adapters with approved provider APIs before offering the service to other athletes.
-2. Add per-user OAuth credentials and consent securely, then move the encrypted local store to a managed production database with scheduled synchronisation.
-3. Improve matching with provider IDs, start time and route comparison before making coaching decisions from merged workouts.
+The repository now includes a separate public-alpha storage boundary. It scopes workouts and provider connections to one athlete, encrypts provider credentials, records consent, removes usable credentials on disconnect, and supports full account-data deletion. It is deliberately separate from the personal pilot database.
+
+Before opening a public alpha:
+
+1. Put this tenant API behind real authentication; do not trust an athlete ID supplied by an MCP or browser client.
+2. Move it to a managed database and managed key service, with backups, monitoring, rate limits, and scheduled synchronisation.
+3. Launch Strava first using the product's hosted OAuth callback and per-user consent. Replace the local community TrainingPeaks and Garmin adapters with approved provider APIs before offering those connections to other athletes.
 4. Keep `draft` and `publish` separate. A publish tool should require explicit athlete confirmation and produce an audit record.

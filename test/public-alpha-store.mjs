@@ -1,0 +1,24 @@
+import assert from "node:assert/strict";
+import { randomBytes } from "node:crypto";
+import { mkdtempSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import { openPublicAlphaStore } from "../src/public-alpha-store.js";
+
+const directory = mkdtempSync(join(tmpdir(), "training-coach-public-alpha-"));
+const store = openPublicAlphaStore({ databasePath: join(directory, "test.sqlite"), encryptionKey: randomBytes(32) });
+store.createAthlete("athlete-a");
+store.createAthlete("athlete-b");
+store.grantConnection({ athleteId: "athlete-a", provider: "strava", credentials: { refreshToken: "private-token" }, scopes: ["read", "activity:read_all"] });
+assert.equal(store.getActiveConnection("athlete-a", "strava").credentials.refreshToken, "private-token");
+assert.equal(store.getActiveConnection("athlete-b", "strava"), null, "another athlete must not see this connection");
+store.storeWorkouts("athlete-a", [{ id: "strava:1", date: "2026-09-19", sourceProviders: ["Strava"], title: "Private ride" }]);
+assert.equal(store.listWorkouts("athlete-a").length, 1);
+assert.equal(store.listWorkouts("athlete-b").length, 0, "another athlete must not see this workout");
+assert.equal(store.revokeConnection("athlete-a", "strava").disconnected, true);
+assert.equal(store.getActiveConnection("athlete-a", "strava"), null, "revocation must remove usable credentials");
+const deleted = store.deleteAthleteData("athlete-a");
+assert.deepEqual(deleted.deleted, { workouts: 1, connections: 1 });
+assert.throws(() => store.listWorkouts("athlete-a"), /not found/);
+store.close();
+console.log("Public-alpha store test passed: tenant isolation, revocation, and deletion work.");
