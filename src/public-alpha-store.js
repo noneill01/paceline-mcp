@@ -9,8 +9,8 @@ const assertText = (value, name) => {
 };
 
 const publicAlphaKey = () => {
-  const value = process.env.PUBLIC_ALPHA_ENCRYPTION_KEY;
-  if (!value) throw new Error("Public-alpha storage is not configured. Set PUBLIC_ALPHA_ENCRYPTION_KEY to a base64-encoded 32-byte key.");
+  const value = process.env.PACELINE_PUBLIC_ALPHA_ENCRYPTION_KEY ?? process.env.PUBLIC_ALPHA_ENCRYPTION_KEY;
+  if (!value) throw new Error("Public-alpha storage is not configured. Set PACELINE_PUBLIC_ALPHA_ENCRYPTION_KEY to a base64-encoded 32-byte key.");
   return Buffer.from(value, "base64");
 };
 
@@ -30,7 +30,7 @@ const decrypt = (value, key) => {
 
 // This is intentionally a separate store from the private pilot database. A hosted
 // deployment will replace SQLite with managed infrastructure, preserving this tenant API.
-export function openPublicAlphaStore({ databasePath = process.env.PUBLIC_ALPHA_DB_PATH ?? ".local-data/public-alpha.sqlite", encryptionKey = publicAlphaKey() } = {}) {
+export function openPublicAlphaStore({ databasePath = process.env.PACELINE_PUBLIC_ALPHA_DB_PATH ?? process.env.PUBLIC_ALPHA_DB_PATH ?? ".local-data/paceline-public-alpha.sqlite", encryptionKey = publicAlphaKey() } = {}) {
   const key = Buffer.isBuffer(encryptionKey) ? encryptionKey : Buffer.from(encryptionKey, "base64");
   if (key.length !== 32) throw new Error("Public-alpha encryption key must be 32 bytes.");
   const absolutePath = resolve(databasePath);

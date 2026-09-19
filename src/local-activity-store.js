@@ -5,8 +5,8 @@ import { DatabaseSync } from "node:sqlite";
 import { activityFingerprint, likelySameActivity } from "./activity-fingerprint.js";
 
 const keyFromEnvironment = () => {
-  const value = process.env.TRAINING_COACH_ENCRYPTION_KEY;
-  if (!value) throw new Error("Local activity storage is not configured. Run paceline-mcp init first.");
+  const value = process.env.PACELINE_ENCRYPTION_KEY ?? process.env.TRAINING_COACH_ENCRYPTION_KEY;
+  if (!value) throw new Error("Local activity storage is not configured. Run paceline init first.");
   return Buffer.from(value, "base64");
 };
 const encrypt = (value, key) => {

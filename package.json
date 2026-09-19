@@ -20,6 +20,7 @@
     "bin",
     "src",
     "scripts/garmin-route.py",
+    "docs",
     "README.md",
     "CONTRIBUTING.md",
     "SECURITY.md",

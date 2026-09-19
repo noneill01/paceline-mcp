@@ -13,8 +13,8 @@ const command = process.argv[2] ?? "help";
 
 const template = () => [
   "# PaceLine Local MCP configuration. This file stays on your computer.",
-  `TRAINING_COACH_ENCRYPTION_KEY=${randomBytes(32).toString("base64")}`,
-  `TRAINING_COACH_DB_PATH=${resolve(configDirectory, "data", "training-coach.sqlite")}`,
+  `PACELINE_ENCRYPTION_KEY=${randomBytes(32).toString("base64")}`,
+  `PACELINE_EXPERIMENTAL_DB_PATH=${resolve(configDirectory, "data", "experimental.sqlite")}`,
   `PACELINE_ACTIVITY_DB_PATH=${resolve(configDirectory, "data", "activities.sqlite")}`,
   "# Optional: enables power-derived IF, TSS/load, CTL, ATL, TSB, and power zones.",
   "PACELINE_FTP_WATTS=",
@@ -28,16 +28,16 @@ const template = () => [
 const printHelp = () => console.log(`PaceLine Local MCP
 
 Usage:
-  paceline-mcp init                Create private local configuration and encryption key
-  paceline-mcp doctor              Check local setup without exposing credentials
-  paceline-mcp import <path>       Import one FIT/TCX file or a folder of activities
-  paceline-mcp serve               Start the MCP server over stdio
+  paceline init                Create private local configuration and encryption key
+  paceline doctor              Check local setup without exposing credentials
+  paceline import <path>       Import one FIT/TCX file or a folder of activities
+  paceline serve               Start the MCP server over stdio
 
 Set PACELINE_HOME to use a different configuration directory. Default: ${configDirectory}`);
 
 const start = (script) => {
   if (!existsSync(configPath)) {
-    console.error(`PaceLine is not configured. Run: paceline-mcp init`);
+    console.error(`PaceLine is not configured. Run: paceline init`);
     process.exitCode = 1;
     return;
   }
@@ -50,7 +50,7 @@ const start = (script) => {
 };
 
 const loadConfiguration = () => {
-  if (!existsSync(configPath)) throw new Error("PaceLine is not configured. Run: paceline-mcp init");
+  if (!existsSync(configPath)) throw new Error("PaceLine is not configured. Run: paceline init");
   if (typeof process.loadEnvFile === "function") process.loadEnvFile(configPath);
 };
 
@@ -61,7 +61,7 @@ if (command === "init") {
     console.log(`Configuration already exists at ${configPath}. Nothing was changed.`);
   } else {
     writeFileSync(configPath, template(), { mode: 0o600 });
-    console.log(`Created private PaceLine configuration at ${configPath}.\n\nNext:\n  paceline-mcp doctor\n  paceline-mcp serve`);
+    console.log(`Created private PaceLine configuration at ${configPath}.\n\nNext:\n  paceline doctor\n  paceline serve`);
   }
 } else if (command === "doctor") {
   const configured = existsSync(configPath);
@@ -69,7 +69,7 @@ if (command === "init") {
   const set = (name) => new RegExp(`^${name}=.+$`, "m").test(file);
   const pathValue = (name) => file.match(new RegExp(`^${name}=(.+)$`, "m"))?.[1]?.trim();
   console.log(`PaceLine configuration: ${configured ? "found" : "missing"}`);
-  console.log(`Local encryption key: ${set("TRAINING_COACH_ENCRYPTION_KEY") ? "configured" : "missing"}`);
+  console.log(`Local encryption key: ${set("PACELINE_ENCRYPTION_KEY") ? "configured" : set("TRAINING_COACH_ENCRYPTION_KEY") ? "configured (legacy name)" : "missing"}`);
   for (const [name, label] of [["PACELINE_TRAININGPEAKS_MCP_PATH", "TrainingPeaks experimental connector"], ["PACELINE_GARMIN_MCP_PATH", "Garmin experimental connector"]]) {
     const value = pathValue(name);
     console.log(`${label}: ${value && existsSync(value) ? "available" : "not configured"}`);
@@ -79,7 +79,7 @@ if (command === "init") {
 } else if (command === "import") {
   try {
     const target = process.argv[3];
-    if (!target) throw new Error("Provide a FIT/TCX file or folder: paceline-mcp import <path>");
+    if (!target) throw new Error("Provide a FIT/TCX file or folder: paceline import <path>");
     loadConfiguration();
     const { importActivityPath } = await import("../src/fit-importer.js");
     const result = await importActivityPath(target);

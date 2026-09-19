@@ -4,10 +4,10 @@ import { dirname, resolve } from "node:path";
 import { DatabaseSync } from "node:sqlite";
 
 const keyFromEnvironment = () => {
-  const value = process.env.TRAINING_COACH_ENCRYPTION_KEY;
-  if (!value) throw new Error("Encrypted storage is not configured. Set TRAINING_COACH_ENCRYPTION_KEY to a base64-encoded 32-byte key.");
+  const value = process.env.PACELINE_ENCRYPTION_KEY ?? process.env.TRAINING_COACH_ENCRYPTION_KEY;
+  if (!value) throw new Error("Encrypted storage is not configured. Set PACELINE_ENCRYPTION_KEY to a base64-encoded 32-byte key.");
   const key = Buffer.from(value, "base64");
-  if (key.length !== 32) throw new Error("TRAINING_COACH_ENCRYPTION_KEY must decode to exactly 32 bytes.");
+  if (key.length !== 32) throw new Error("PACELINE_ENCRYPTION_KEY must decode to exactly 32 bytes.");
   return key;
 };
 
@@ -25,7 +25,7 @@ const decrypt = (value, key) => {
   return JSON.parse(Buffer.concat([decipher.update(payload.subarray(28)), decipher.final()]).toString("utf8"));
 };
 
-export function openEncryptedStore({ databasePath = process.env.TRAINING_COACH_DB_PATH ?? ".local-data/training-coach.sqlite", encryptionKey = keyFromEnvironment() } = {}) {
+export function openEncryptedStore({ databasePath = process.env.PACELINE_EXPERIMENTAL_DB_PATH ?? process.env.TRAINING_COACH_DB_PATH ?? ".local-data/paceline-experimental.sqlite", encryptionKey = keyFromEnvironment() } = {}) {
   const absolutePath = resolve(databasePath);
   mkdirSync(dirname(absolutePath), { recursive: true, mode: 0o700 });
   const database = new DatabaseSync(absolutePath);

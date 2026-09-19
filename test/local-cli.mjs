@@ -14,8 +14,8 @@ const options = { cwd: root, env: { ...process.env, PACELINE_HOME: configHome } 
 const init = await execFileAsync(process.execPath, ["bin/paceline-mcp.mjs", "init"], options);
 assert.match(init.stdout, /Created private PaceLine configuration/);
 const config = readFileSync(join(configHome, ".env"), "utf8");
-assert.match(config, /^TRAINING_COACH_ENCRYPTION_KEY=.+$/m);
-assert.match(config, /^TRAINING_COACH_DB_PATH=.+$/m);
+assert.match(config, /^PACELINE_ENCRYPTION_KEY=.+$/m);
+assert.match(config, /^PACELINE_EXPERIMENTAL_DB_PATH=.+$/m);
 const doctor = await execFileAsync(process.execPath, ["bin/paceline-mcp.mjs", "doctor"], options);
 assert.match(doctor.stdout, /PaceLine configuration: found/);
 assert.match(doctor.stdout, /No credentials or activity data were read/);
