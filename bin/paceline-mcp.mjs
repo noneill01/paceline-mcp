@@ -16,6 +16,8 @@ const template = () => [
   `TRAINING_COACH_ENCRYPTION_KEY=${randomBytes(32).toString("base64")}`,
   `TRAINING_COACH_DB_PATH=${resolve(configDirectory, "data", "training-coach.sqlite")}`,
   `PACELINE_ACTIVITY_DB_PATH=${resolve(configDirectory, "data", "activities.sqlite")}`,
+  "# Optional: enables power-derived IF, TSS/load, CTL, ATL, TSB, and power zones.",
+  "PACELINE_FTP_WATTS=",
   "",
   "# Optional experimental local connector paths. Do not put account cookies here.",
   "PACELINE_TRAININGPEAKS_MCP_PATH=",
@@ -28,7 +30,7 @@ const printHelp = () => console.log(`PaceLine Local MCP
 Usage:
   paceline-mcp init                Create private local configuration and encryption key
   paceline-mcp doctor              Check local setup without exposing credentials
-  paceline-mcp import <path>       Import one FIT file or every FIT file in a folder
+  paceline-mcp import <path>       Import one FIT/TCX file or a folder of activities
   paceline-mcp serve               Start the MCP server over stdio
 
 Set PACELINE_HOME to use a different configuration directory. Default: ${configDirectory}`);
@@ -77,11 +79,15 @@ if (command === "init") {
 } else if (command === "import") {
   try {
     const target = process.argv[3];
-    if (!target) throw new Error("Provide a FIT file or folder: paceline-mcp import <path>");
+    if (!target) throw new Error("Provide a FIT/TCX file or folder: paceline-mcp import <path>");
     loadConfiguration();
-    const { importFitPath } = await import("../src/fit-importer.js");
-    const result = await importFitPath(target);
-    console.log(`Imported ${result.activityCount} activities from ${result.importedFiles} FIT files. ${result.duplicateFiles} duplicate files were skipped.`);
+    const { importActivityPath } = await import("../src/fit-importer.js");
+    const result = await importActivityPath(target);
+    const bySport = Object.groupBy(result.activities, (activity) => activity.sport);
+    const dates = result.activities.map((activity) => activity.startedAt.slice(0, 10)).sort();
+    console.log(`Scanned ${result.scannedFiles} supported files.\n\nImported ${result.activityCount} activities from ${result.importedFiles} files. ${result.duplicateFiles} exact duplicates were skipped. ${result.probableDuplicates.length} probable activity duplicates were flagged.`);
+    for (const [sport, activities] of Object.entries(bySport)) console.log(`${sport}: ${activities.length}`);
+    if (dates.length) console.log(`Date range: ${dates[0]} → ${dates.at(-1)}`);
     if (result.failures.length) console.error(`${result.failures.length} files could not be imported. Run again with individual files to inspect them.`);
   } catch (error) {
     console.error(error instanceof Error ? error.message : String(error));

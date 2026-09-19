@@ -2,6 +2,7 @@ import { createCipheriv, createDecipheriv, randomBytes } from "node:crypto";
 import { mkdirSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { DatabaseSync } from "node:sqlite";
+import { activityFingerprint, likelySameActivity } from "./activity-fingerprint.js";
 
 const keyFromEnvironment = () => {
   const value = process.env.TRAINING_COACH_ENCRYPTION_KEY;
@@ -37,6 +38,8 @@ export function openLocalActivityStore({ databasePath = process.env.PACELINE_ACT
     storeFileActivities(fileHash, activities) {
       if (this.hasFile(fileHash)) return { imported: false, activityCount: 0 };
       const now = new Date().toISOString();
+      const existing = database.prepare("SELECT payload FROM activities").all().map((row) => decrypt(row.payload, key));
+      const probableDuplicates = activities.flatMap((activity) => existing.filter((candidate) => likelySameActivity(candidate, activity)).map((candidate) => ({ activityId: activity.id, possibleDuplicateOf: candidate.id, fingerprint: activityFingerprint(activity) })));
       const insert = database.prepare("INSERT INTO activities (id, started_at, sport, payload, imported_at) VALUES (?, ?, ?, ?, ?)");
       database.exec("BEGIN");
       try {
@@ -44,7 +47,7 @@ export function openLocalActivityStore({ databasePath = process.env.PACELINE_ACT
         database.prepare("INSERT INTO imported_files (file_hash, imported_at) VALUES (?, ?)").run(fileHash, now);
         database.exec("COMMIT");
       } catch (error) { database.exec("ROLLBACK"); throw error; }
-      return { imported: true, activityCount: activities.length };
+      return { imported: true, activityCount: activities.length, probableDuplicates };
     },
     listActivities({ limit = 50 } = {}) {
       const safeLimit = Math.max(1, Math.min(Number(limit) || 50, 500));

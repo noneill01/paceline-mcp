@@ -12,7 +12,7 @@ import {
 import { getGarminTrainingSnapshot, getGarminWorkoutDetail } from "./garmin-adapter.js";
 import { getCombinedReadiness, getCombinedWorkoutDetail, listCombinedWorkouts } from "./combined-coach.js";
 import { getStoredWorkouts, syncPrivateAlphaData } from "./sync-service.js";
-import { getLocalActivities, getLocalActivity, getLocalTrainingSummary } from "./local-activity-service.js";
+import { compareLocalTrainingPeriods, getLocalActivities, getLocalActivity, getLocalTrainingLoad, getLocalTrainingSummary } from "./local-activity-service.js";
 
 const server = new McpServer({ name: "training-coach-combined", version: "0.3.0" });
 const respond = (payload) => ({ content: [{ type: "text", text: JSON.stringify(payload, null, 2) }] });
@@ -29,6 +29,8 @@ server.tool("list_stored_workouts", "Read normalized workouts from encrypted loc
 server.tool("get_recent_training", "Return FIT-imported local activities from PaceLine's encrypted local store. Read-only.", { limit: z.number().int().min(1).max(500).optional() }, async ({ limit }) => respond(getLocalActivities(limit)));
 server.tool("get_activity", "Return one FIT-imported canonical activity with laps, samples, and file-provided metrics. Read-only.", { activityId: z.string().min(1) }, async ({ activityId }) => respond(getLocalActivity(activityId)));
 server.tool("get_local_training_summary", "Return aggregate duration, distance, and available training stress from local FIT imports. Read-only.", { days: z.number().int().min(1).max(365).optional() }, async ({ days }) => respond(getLocalTrainingSummary(days)));
+server.tool("get_training_load", "Calculate local weekly volume and available CTL, ATL, and TSB from FIT/TCX imports. Power-derived load requires configured FTP; values are otherwise left unavailable. Read-only.", { days: z.number().int().min(7).max(365).optional() }, async ({ days }) => respond(getLocalTrainingLoad(days)));
+server.tool("compare_training_periods", "Compare recent and preceding local training periods by activity count, duration, distance, and available load. Read-only.", { days: z.number().int().min(7).max(180).optional() }, async ({ days }) => respond(compareLocalTrainingPeriods(days)));
 server.tool("explain_training_load", "Explain TrainingPeaks fitness, fatigue, form, and recent completed load. Read-only.", {}, async () => respond(await getTrainingPeaksLoad()));
 server.tool("assess_readiness", "Assess training form from TrainingPeaks load. Garmin recovery signals are not yet connected. Read-only.", {}, async () => respond(await getTrainingPeaksReadiness()));
 server.tool("identify_training_risks", "Highlight conservative training-load risks from TrainingPeaks history. Read-only.", {}, async () => respond(await getTrainingPeaksRisks()));

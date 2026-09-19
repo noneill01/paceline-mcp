@@ -1,4 +1,5 @@
 import { openLocalActivityStore } from "./local-activity-store.js";
+import { analyseTraining, compareTrainingPeriods } from "./training-engine.js";
 
 export function getLocalActivities(limit = 50) {
   const store = openLocalActivityStore();
@@ -35,4 +36,14 @@ export function getLocalTrainingSummary(days = 42) {
     trainingStress: trainingStress || null,
     bySport
   };
+}
+
+export function getLocalTrainingLoad(days = 42) {
+  const activities = getLocalActivities(500).activities;
+  return { source: "PaceLine Local", ...analyseTraining(activities, { days }) };
+}
+
+export function compareLocalTrainingPeriods(days = 42) {
+  const activities = getLocalActivities(500).activities;
+  return { source: "PaceLine Local", ...compareTrainingPeriods(activities, { days }) };
 }

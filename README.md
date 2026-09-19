@@ -46,7 +46,9 @@ Import one FIT file or every FIT file inside a folder:
 paceline import ~/Downloads/activities
 ```
 
-PaceLine reads FIT sessions, laps, samples, available HR/power/cadence/elevation metrics, and developer fields into an encrypted local activity store. A SHA-256 file hash prevents the same export being imported twice. TCX and GPX import are the next planned formats.
+PaceLine reads FIT and TCX sessions, laps, samples, and available HR/power/cadence/elevation metrics into an encrypted local activity store. A SHA-256 file hash prevents exact duplicate files; near-identical activities from different exports are flagged as probable duplicates. GPX import is planned later.
+
+Set `PACELINE_FTP_WATTS` in `~/.paceline/.env` to enable power-derived intensity factor, load, CTL, ATL, and TSB where a FIT file does not already provide training stress. PaceLine leaves these metrics unavailable when it lacks a defensible input.
 
 ### Experimental local connectors
 
@@ -82,6 +84,11 @@ Use any MCP client that supports local stdio servers. The server command is `nod
 | `get_combined_readiness` | TrainingPeaks form plus only the Garmin recovery signals actually available |
 | `sync_private_alpha_data` | Persist merged provider data to encrypted local storage; never writes to providers |
 | `list_stored_workouts` | Read the encrypted local private-alpha store |
+| `get_recent_training` | Read FIT/TCX-imported canonical activities from PaceLine's encrypted local store |
+| `get_activity` | Return one local activity with laps, samples, and available file metrics |
+| `get_local_training_summary` | Aggregate local duration, distance, and available training stress |
+| `get_training_load` | Calculate weekly volume and available CTL, ATL, and TSB from local FIT/TCX imports |
+| `compare_training_periods` | Compare recent and preceding local periods by volume and available load |
 | `explain_training_load` | Load trend and coaching implication |
 | `assess_readiness` | Green/amber/red readiness explanation |
 | `identify_training_risks` | Conservative load and recovery flags |
