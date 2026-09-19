@@ -13,7 +13,7 @@ try {
   const detailTool = tools.find((tool) => tool.name === "get_combined_workout_detail");
   assert.ok(detailTool, "expected the unified workout-detail tool");
   assert.equal(detailTool.inputSchema.properties.workoutId.type, "string");
-  assert.ok(tools.length >= 15, "expected the complete combined MCP tool surface");
+  assert.ok(tools.length >= 13, "expected the complete combined MCP tool surface");
   console.log("Combined MCP smoke test passed: unified workout-detail tool discovered.");
 } finally {
   await transport.close();

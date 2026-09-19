@@ -5,12 +5,6 @@ const asDateTime = (value) => {
   const parsed = new Date(value);
   return Number.isFinite(parsed.getTime()) ? parsed.toISOString() : null;
 };
-const asLocalDateTime = (value) => {
-  if (!value) return null;
-  // Strava marks start_date_local with Z even though its clock time is local.
-  // Remove that transport marker before comparing it with Garmin local timestamps.
-  return asDateTime(String(value).replace(/Z$/, ""));
-};
 
 export function normalizeTrainingPeaksWorkout(workout) {
   const completed = workout.type === "completed";
@@ -65,26 +59,6 @@ export function normalizeGarminActivity(activity) {
       normalizedPower: asNumber(activity.normalized_power_watts),
       averageCadence: asNumber(activity.avg_cadence)
     }
-  };
-}
-
-export function normalizeStravaActivity(activity) {
-  return {
-    id: `strava:${activity.id}`,
-    providerIds: { strava: String(activity.id) },
-    sourceProviders: ["Strava"],
-    date: String(activity.start_date_local ?? activity.start_date ?? "").slice(0, 10),
-    // Compare local session times across providers. Garmin commonly supplies a local
-    // timestamp, while Strava provides both local and UTC variants.
-    startTime: activity.start_date_local ? asLocalDateTime(activity.start_date_local) : asDateTime(activity.start_date),
-    status: "completed",
-    sport: activity.sport_type ?? activity.type ?? null,
-    title: activity.name ?? "Untitled activity",
-    planned: null,
-    actual: { durationSeconds: asNumber(activity.moving_time ?? activity.elapsed_time), distanceMeters: asNumber(activity.distance), trainingStress: null },
-    description: activity.description || null,
-    route: activity.map?.summary_polyline ? { encodedPolyline: activity.map.summary_polyline } : null,
-    physiology: { averageHeartRate: asNumber(activity.average_heartrate), maximumHeartRate: asNumber(activity.max_heartrate), averagePower: asNumber(activity.average_watts), normalizedPower: asNumber(activity.weighted_average_watts), averageCadence: asNumber(activity.average_cadence) }
   };
 }
 

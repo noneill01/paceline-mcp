@@ -1,20 +1,16 @@
 import { getGarminTrainingSnapshot, getGarminWorkoutDetail, listGarminWorkouts } from "./garmin-adapter.js";
 import { getTrainingPeaksReadiness, getTrainingPeaksWorkoutDetail, listTrainingPeaksWorkouts } from "./trainingpeaks-adapter.js";
 import { mergeLikelyDuplicates } from "./training-model.js";
-import { getStravaConnectionStatus, getStravaWorkoutDetail, listStravaWorkouts } from "./strava-adapter.js";
 
-async function loadProviderWorkouts(days, includeStrava) {
-  const providers = await Promise.all([listTrainingPeaksWorkouts(days), listGarminWorkouts(days)]);
-  if (includeStrava && getStravaConnectionStatus().connected) providers.push(await listStravaWorkouts());
-  return providers;
+async function loadProviderWorkouts(days) {
+  return Promise.all([listTrainingPeaksWorkouts(days), listGarminWorkouts(days)]);
 }
 
-export async function listCombinedWorkouts(days = 28, includeStrava = false) {
-  const providers = await loadProviderWorkouts(days, includeStrava);
+export async function listCombinedWorkouts(days = 28) {
+  const providers = await loadProviderWorkouts(days);
   return {
     periodDays: days,
     providers: providers.map((provider) => provider.source),
-    strava: getStravaConnectionStatus(),
     workouts: mergeLikelyDuplicates(providers.flatMap((provider) => provider.workouts))
   };
 }
@@ -38,8 +34,8 @@ const plannedVsActual = (workout) => {
   };
 };
 
-export async function getCombinedWorkoutDetail(workoutId, days = 90, includeStrava = true) {
-  const providers = await loadProviderWorkouts(days, includeStrava);
+export async function getCombinedWorkoutDetail(workoutId, days = 90) {
+  const providers = await loadProviderWorkouts(days);
   const workouts = mergeLikelyDuplicates(providers.flatMap((provider) => provider.workouts));
   const workout = workouts.find((candidate) => requestedIdMatches(candidate, workoutId));
   if (!workout) throw new Error("Workout was not found in the selected period. Use list_combined_workouts to select a workout ID.");
@@ -47,7 +43,6 @@ export async function getCombinedWorkoutDetail(workoutId, days = 90, includeStra
   const detailRequests = [];
   if (workout.providerIds.trainingPeaks) detailRequests.push(getTrainingPeaksWorkoutDetail(workout.providerIds.trainingPeaks, days));
   if (workout.providerIds.garmin) detailRequests.push(getGarminWorkoutDetail(workout.providerIds.garmin));
-  if (workout.providerIds.strava) detailRequests.push(getStravaWorkoutDetail(workout.providerIds.strava));
   const settledDetails = await Promise.allSettled(detailRequests);
   const providerDetails = settledDetails.flatMap((result) => result.status === "fulfilled" ? [result.value] : []);
   const unavailableProviderDetails = settledDetails.flatMap((result) => result.status === "rejected" ? [result.reason?.message ?? "Provider detail could not be loaded."] : []);

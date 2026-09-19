@@ -1,20 +1,20 @@
 import assert from "node:assert/strict";
-import { likelySameWorkout, mergeLikelyDuplicates, normalizeGarminActivity, normalizeStravaActivity, normalizeTrainingPeaksWorkout } from "../src/training-model.js";
+import { likelySameWorkout, mergeLikelyDuplicates, normalizeGarminActivity, normalizeTrainingPeaksWorkout } from "../src/training-model.js";
 
 const planned = normalizeTrainingPeaksWorkout({ id: "tp-1", date: "2026-09-18", type: "completed", sport: "Bike", title: "Endurance", duration_actual: 1.0, distance_actual_km: 30, tss_actual: 60 });
 const recorded = normalizeGarminActivity({ id: "g-1", start_time: "2026-09-18 08:00:00", type: "cycling", name: "Morning Ride", duration_seconds: 3650, distance_meters: 30100, avg_hr_bpm: 130 });
-const strava = normalizeStravaActivity({ id: "s-1", start_date: "2026-09-18T07:01:00Z", start_date_local: "2026-09-18T08:01:00Z", sport_type: "Ride", name: "Morning Ride", moving_time: 3610, distance: 30050, average_heartrate: 129 });
+const importedFit = { ...recorded, id: "fit:1", providerIds: { fitFile: "1" }, sourceProviders: ["FIT file"] };
 const merged = mergeLikelyDuplicates([planned, recorded]);
 assert.equal(merged.length, 1);
 assert.deepEqual(merged[0].sourceProviders.sort(), ["Garmin Connect", "TrainingPeaks"]);
 assert.equal(merged[0].providerIds.garmin, "g-1");
 assert.equal(merged[0].providerIds.trainingPeaks, "tp-1");
 assert.deepEqual(planned.sourceProviders, ["TrainingPeaks"]);
-assert.equal(likelySameWorkout(recorded, strava), true);
-assert.equal(likelySameWorkout(recorded, normalizeStravaActivity({ id: "s-2", start_date_local: "2026-09-18T09:00:00Z", sport_type: "Ride", moving_time: 3600, distance: 30000 })), false);
-assert.equal(likelySameWorkout(recorded, normalizeStravaActivity({ id: "s-3", start_date_local: "2026-09-18T08:01:00Z", sport_type: "Ride", moving_time: 3600, distance: 40000 })), false);
-const threeWayMerge = mergeLikelyDuplicates([planned, recorded, strava]);
+assert.equal(likelySameWorkout(recorded, importedFit), true);
+assert.equal(likelySameWorkout(recorded, { ...importedFit, startTime: "2026-09-18T09:00:00.000Z" }), false);
+assert.equal(likelySameWorkout(recorded, { ...importedFit, actual: { ...importedFit.actual, distanceMeters: 40000 } }), false);
+const threeWayMerge = mergeLikelyDuplicates([planned, recorded, importedFit]);
 assert.equal(threeWayMerge.length, 1);
-assert.deepEqual(threeWayMerge[0].sourceProviders, ["Garmin Connect", "Strava", "TrainingPeaks"]);
+assert.deepEqual(threeWayMerge[0].sourceProviders, ["FIT file", "Garmin Connect", "TrainingPeaks"]);
 assert.equal(threeWayMerge[0].duplicateMatch.confidence, "high");
 console.log("Training model test passed: likely provider duplicates are merged.");

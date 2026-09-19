@@ -1,11 +1,11 @@
 import { listCombinedWorkouts } from "./combined-coach.js";
 import { openEncryptedStore } from "./storage.js";
 
-export async function syncPrivateAlphaData({ days = 28, includeStrava = false } = {}) {
-  const combined = await listCombinedWorkouts(days, includeStrava);
+export async function syncPrivateAlphaData({ days = 28 } = {}) {
+  const combined = await listCombinedWorkouts(days);
   const store = openEncryptedStore();
   try {
-    return { ...store.recordSync({ providers: combined.providers, workouts: combined.workouts }), providers: combined.providers, strava: combined.strava };
+    return { ...store.recordSync({ providers: combined.providers, workouts: combined.workouts }), providers: combined.providers };
   } finally { store.close(); }
 }
 
