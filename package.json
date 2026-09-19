@@ -1,6 +1,8 @@
 {
   "name": "training-coach-mcp",
   "version": "0.1.0",
+  "description": "Local-first MCP server for private endurance-training file analysis.",
+  "license": "MIT",
   "private": true,
   "type": "module",
   "bin": {
@@ -15,6 +17,9 @@
     "src",
     "scripts/garmin-route.py",
     "README.md",
+    "CONTRIBUTING.md",
+    "SECURITY.md",
+    "LICENSE",
     ".env.example"
   ],
   "scripts": {
