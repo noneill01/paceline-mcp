@@ -52,3 +52,11 @@ export async function listStravaWorkouts({ after, before } = {}) {
   if (!response.ok) throw new Error(`Strava activity request failed (${response.status}).`);
   return { source: "Strava", workouts: (await response.json()).map(normalizeStravaActivity) };
 }
+
+export async function getStravaWorkoutDetail(activityId) {
+  const token = await accessToken();
+  const response = await fetch(`https://www.strava.com/api/v3/activities/${encodeURIComponent(activityId)}`, { headers: { authorization: `Bearer ${token}` } });
+  if (!response.ok) throw new Error(`Strava activity detail request failed (${response.status}).`);
+  const providerData = await response.json();
+  return { source: "Strava", workout: normalizeStravaActivity(providerData), providerData };
+}

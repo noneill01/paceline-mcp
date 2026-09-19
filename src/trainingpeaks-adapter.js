@@ -83,6 +83,18 @@ export async function listTrainingPeaksWorkouts(days = 28) {
   });
 }
 
+export async function getTrainingPeaksWorkoutDetail(workoutId, days = 90) {
+  return withTrainingPeaks(async (get) => {
+    const [planned, completed] = await Promise.all([
+      get("tp_get_workouts", { start_date: date(-days), end_date: date(), type: "planned" }),
+      get("tp_get_workouts", { start_date: date(-days), end_date: date(), type: "completed" })
+    ]);
+    const providerData = [...(planned.workouts ?? []), ...(completed.workouts ?? [])].find((workout) => String(workout.id) === String(workoutId));
+    if (!providerData) throw new Error("TrainingPeaks workout was not found in the selected period.");
+    return { source: "TrainingPeaks", workout: normalizeTrainingPeaksWorkout(providerData), providerData };
+  });
+}
+
 export async function getTrainingPeaksLoad() {
   return withTrainingPeaks(async (get) => {
     const [fitness, completed] = await Promise.all([

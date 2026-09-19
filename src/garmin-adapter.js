@@ -67,7 +67,7 @@ export async function getGarminWorkoutDetail(activityId) {
   return withGarmin(async (get) => {
     const [activity, route] = await Promise.all([get("get_activity", { activity_id: activityId }), getRoute(activityId)]);
     const workout = normalizeGarminActivity({ ...activity, route });
-    return { source: "Garmin Connect", workout, note: route ? "Route points were recorded by Garmin." : "No GPS route was recorded for this activity." };
+    return { source: "Garmin Connect", workout, providerData: { ...activity, route }, note: route ? "Route points were recorded by Garmin." : "No GPS route was recorded for this activity." };
   });
 }
 

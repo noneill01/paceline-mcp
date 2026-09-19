@@ -10,7 +10,7 @@ import {
   getTrainingPeaksTodaysWorkout
 } from "./trainingpeaks-adapter.js";
 import { getGarminTrainingSnapshot, getGarminWorkoutDetail } from "./garmin-adapter.js";
-import { getCombinedReadiness, listCombinedWorkouts } from "./combined-coach.js";
+import { getCombinedReadiness, getCombinedWorkoutDetail, listCombinedWorkouts } from "./combined-coach.js";
 import { getStravaConnectionStatus, listStravaWorkouts } from "./strava-adapter.js";
 import { getStoredWorkouts, syncPrivateAlphaData } from "./sync-service.js";
 
@@ -22,6 +22,7 @@ server.tool("get_todays_workout", "Return every available TrainingPeaks field fo
 server.tool("get_garmin_training_snapshot", "Return recent Garmin activities plus available HR, HRV, resting HR, sleep, and stress signals. Read-only.", {}, async () => respond(await getGarminTrainingSnapshot()));
 server.tool("get_garmin_workout_detail", "Return a normalized Garmin activity with detailed metrics and recorded GPS route points where available. Read-only.", { activityId: z.union([z.string(), z.number()]) }, async ({ activityId }) => respond(await getGarminWorkoutDetail(activityId)));
 server.tool("list_combined_workouts", "Return provider-neutral workouts from TrainingPeaks and Garmin, matching likely duplicates. Strava is included only after OAuth is configured. Read-only.", { days: z.number().int().min(1).max(90).optional(), includeStrava: z.boolean().optional() }, async ({ days, includeStrava }) => respond(await listCombinedWorkouts(days, includeStrava)));
+server.tool("get_combined_workout_detail", "Return a full unified session view for one combined or provider workout ID: available planned-versus-actual fields, detailed Garmin metrics, recorded route, and source-specific TrainingPeaks or Strava data. Read-only.", { workoutId: z.string().min(1), days: z.number().int().min(1).max(90).optional(), includeStrava: z.boolean().optional() }, async ({ workoutId, days, includeStrava }) => respond(await getCombinedWorkoutDetail(workoutId, days, includeStrava)));
 server.tool("get_combined_readiness", "Return TrainingPeaks form plus Garmin recovery signals that are actually available. Read-only.", {}, async () => respond(await getCombinedReadiness()));
 server.tool("get_strava_connection_status", "Report whether the official Strava OAuth connector is configured, without exposing credentials. Read-only.", {}, async () => respond(getStravaConnectionStatus()));
 server.tool("list_strava_workouts", "Return normalized Strava workouts after the official OAuth connector is configured. Read-only.", {}, async () => respond(await listStravaWorkouts()));

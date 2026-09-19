@@ -40,6 +40,7 @@ Use any MCP client that supports local stdio servers. The server command is `nod
 | `get_garmin_training_snapshot` | Recent Garmin activities plus available recovery signals |
 | `get_garmin_workout_detail` | Normalized Garmin metrics and recorded GPS route points for one activity |
 | `list_combined_workouts` | TrainingPeaks and Garmin workouts in a shared format, with likely duplicates merged |
+| `get_combined_workout_detail` | One unified workout with planned-versus-actual comparison, provider details, available HR/power/cadence data, and Garmin route points |
 | `get_combined_readiness` | TrainingPeaks form plus only the Garmin recovery signals actually available |
 | `get_strava_connection_status` | Safe status of the official Strava connector; no credentials exposed |
 | `list_strava_workouts` | Normalized Strava activities after OAuth configuration |
