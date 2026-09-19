@@ -1,8 +1,18 @@
 # PaceLine Local MCP
 
-PaceLine Local is an early-stage, local-first MCP server for endurance-training data. It is for athletes and developers who want to import their own activity files, keep them on their own computer, and analyse them through an MCP-compatible AI client.
+PaceLine Local is an early-stage, local-first MCP server for endurance-training data. It is for athletes and developers who want to import their own activity files, keep them on their own computer, and analyse them through MCP-compatible AI clients.
 
 It currently imports FIT and TCX files, stores canonical activity data locally, detects duplicate imports, and exposes training summaries and load analysis. It is not a hosted service, a medical device, or a production provider-sync product.
+
+| Capability | Status |
+| --- | --- |
+| FIT import | Complete |
+| TCX import | Complete |
+| Encrypted local storage | Complete |
+| MCP analysis tools | Complete |
+| First derived load metrics | Complete |
+| GPX import | Planned |
+| Garmin / TrainingPeaks sync | Planned, provider approval required |
 
 ## Install
 

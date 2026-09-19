@@ -1,8 +1,12 @@
 {
-  "name": "training-coach-mcp",
+  "name": "paceline-mcp",
   "version": "0.1.0",
   "description": "Local-first MCP server for private endurance-training file analysis.",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/noneill01/paceline-mcp.git"
+  },
   "private": true,
   "type": "module",
   "bin": {
