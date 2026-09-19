@@ -38,6 +38,16 @@ paceline-mcp serve
 
 Configure your MCP client with command `paceline-mcp` and argument `serve`.
 
+### Import FIT activities
+
+Import one FIT file or every FIT file inside a folder:
+
+```sh
+paceline import ~/Downloads/activities
+```
+
+PaceLine reads FIT sessions, laps, samples, available HR/power/cadence/elevation metrics, and developer fields into an encrypted local activity store. A SHA-256 file hash prevents the same export being imported twice. TCX and GPX import are the next planned formats.
+
 ### Experimental local connectors
 
 The Garmin and TrainingPeaks connectors are retained for personal experimentation, but are not a distributable public integration method. If an advanced user has installed compatible local connector projects, they can configure their directory paths in `~/.paceline/.env` with `PACELINE_GARMIN_MCP_PATH` and `PACELINE_TRAININGPEAKS_MCP_PATH`. Do not put browser cookies or account passwords in that file.

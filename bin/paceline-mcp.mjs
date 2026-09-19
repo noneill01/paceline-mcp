@@ -15,6 +15,7 @@ const template = () => [
   "# PaceLine Local MCP configuration. This file stays on your computer.",
   `TRAINING_COACH_ENCRYPTION_KEY=${randomBytes(32).toString("base64")}`,
   `TRAINING_COACH_DB_PATH=${resolve(configDirectory, "data", "training-coach.sqlite")}`,
+  `PACELINE_ACTIVITY_DB_PATH=${resolve(configDirectory, "data", "activities.sqlite")}`,
   "",
   "# Optional experimental local connector paths. Do not put account cookies here.",
   "PACELINE_TRAININGPEAKS_MCP_PATH=",
@@ -27,6 +28,7 @@ const printHelp = () => console.log(`PaceLine Local MCP
 Usage:
   paceline-mcp init                Create private local configuration and encryption key
   paceline-mcp doctor              Check local setup without exposing credentials
+  paceline-mcp import <path>       Import one FIT file or every FIT file in a folder
   paceline-mcp serve               Start the MCP server over stdio
 
 Set PACELINE_HOME to use a different configuration directory. Default: ${configDirectory}`);
@@ -43,6 +45,11 @@ const start = (script) => {
     stdio: "inherit"
   });
   child.on("exit", (code) => { process.exitCode = code ?? 1; });
+};
+
+const loadConfiguration = () => {
+  if (!existsSync(configPath)) throw new Error("PaceLine is not configured. Run: paceline-mcp init");
+  if (typeof process.loadEnvFile === "function") process.loadEnvFile(configPath);
 };
 
 if (command === "init") {
@@ -67,6 +74,19 @@ if (command === "init") {
   }
   console.log("No credentials or activity data were read by this check.");
   if (!configured) process.exitCode = 1;
+} else if (command === "import") {
+  try {
+    const target = process.argv[3];
+    if (!target) throw new Error("Provide a FIT file or folder: paceline-mcp import <path>");
+    loadConfiguration();
+    const { importFitPath } = await import("../src/fit-importer.js");
+    const result = await importFitPath(target);
+    console.log(`Imported ${result.activityCount} activities from ${result.importedFiles} FIT files. ${result.duplicateFiles} duplicate files were skipped.`);
+    if (result.failures.length) console.error(`${result.failures.length} files could not be imported. Run again with individual files to inspect them.`);
+  } catch (error) {
+    console.error(error instanceof Error ? error.message : String(error));
+    process.exitCode = 1;
+  }
 } else if (command === "serve") {
   start(resolve(packageRoot, "src", "trainingpeaks-server.js"));
 } else {

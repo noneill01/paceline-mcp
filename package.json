@@ -4,7 +4,8 @@
   "private": true,
   "type": "module",
   "bin": {
-    "paceline-mcp": "bin/paceline-mcp.mjs"
+    "paceline-mcp": "bin/paceline-mcp.mjs",
+    "paceline": "bin/paceline-mcp.mjs"
   },
   "engines": {
     "node": ">=22.5.0"
@@ -20,11 +21,12 @@
     "start": "node --env-file-if-exists=.env src/server.js",
     "start:trainingpeaks": "node --env-file-if-exists=.env src/trainingpeaks-server.js",
     "inspect": "npx @modelcontextprotocol/inspector node src/server.js",
-    "test": "node test/smoke.mjs && node test/combined-mcp.mjs && node test/training-model.mjs && node test/storage.mjs && node test/public-alpha-store.mjs && node test/local-cli.mjs",
+    "test": "node test/smoke.mjs && node test/combined-mcp.mjs && node test/training-model.mjs && node test/storage.mjs && node test/public-alpha-store.mjs && node test/local-cli.mjs && node test/fit-importer.mjs",
     "test:trainingpeaks": "node test/trainingpeaks-smoke.mjs"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.26.0",
+    "fit-file-parser": "^5.2.1",
     "zod": "^3.24.2"
   }
 }
