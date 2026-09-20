@@ -32,6 +32,7 @@ export function openLocalActivityStore({ databasePath = process.env.PACELINE_ACT
     PRAGMA journal_mode = WAL;
     CREATE TABLE IF NOT EXISTS imported_files (file_hash TEXT PRIMARY KEY, imported_at TEXT NOT NULL) STRICT;
     CREATE TABLE IF NOT EXISTS activities (id TEXT PRIMARY KEY, started_at TEXT NOT NULL, sport TEXT NOT NULL, payload TEXT NOT NULL, imported_at TEXT NOT NULL) STRICT;
+    CREATE TABLE IF NOT EXISTS athlete_profile (id INTEGER PRIMARY KEY CHECK (id = 1), payload TEXT NOT NULL, updated_at TEXT NOT NULL) STRICT;
   `);
   return {
     hasFile(fileHash) { return Boolean(database.prepare("SELECT 1 FROM imported_files WHERE file_hash = ?").get(fileHash)); },
@@ -56,6 +57,15 @@ export function openLocalActivityStore({ databasePath = process.env.PACELINE_ACT
     getActivity(id) {
       const row = database.prepare("SELECT payload FROM activities WHERE id = ?").get(id);
       return row ? decrypt(row.payload, key) : null;
+    },
+    getAthleteProfile() {
+      const row = database.prepare("SELECT payload FROM athlete_profile WHERE id = 1").get();
+      return row ? decrypt(row.payload, key) : null;
+    },
+    setAthleteProfile(profile) {
+      database.prepare("INSERT INTO athlete_profile (id, payload, updated_at) VALUES (1, ?, ?) ON CONFLICT(id) DO UPDATE SET payload = excluded.payload, updated_at = excluded.updated_at")
+        .run(encrypt(profile, key), new Date().toISOString());
+      return profile;
     },
     close() { database.close(); }
   };

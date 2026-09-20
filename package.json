@@ -28,10 +28,10 @@
     ".env.example"
   ],
   "scripts": {
-    "start": "node --env-file-if-exists=.env src/server.js",
+    "start": "node --env-file-if-exists=.env src/paceline-server.js",
     "start:trainingpeaks": "node --env-file-if-exists=.env src/trainingpeaks-server.js",
     "inspect": "npx @modelcontextprotocol/inspector node src/server.js",
-    "test": "node test/smoke.mjs && node test/combined-mcp.mjs && node test/training-model.mjs && node test/storage.mjs && node test/public-alpha-store.mjs && node test/local-cli.mjs && node test/fit-importer.mjs && node test/tcx-engine.mjs",
+    "test": "node test/smoke.mjs && node test/combined-mcp.mjs && node test/paceline-mcp.mjs && node test/training-model.mjs && node test/storage.mjs && node test/public-alpha-store.mjs && node test/local-cli.mjs && node test/fit-importer.mjs && node test/tcx-engine.mjs && node test/zones.mjs",
     "test:trainingpeaks": "node test/trainingpeaks-smoke.mjs"
   },
   "dependencies": {

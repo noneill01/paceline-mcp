@@ -13,6 +13,8 @@ It currently imports FIT and TCX files, stores canonical activity data locally, 
 | Encrypted local storage | Complete |
 | MCP analysis tools | Complete |
 | First derived load metrics | Complete |
+| Athlete profile and zones | Complete |
+| Power / HR time in zones | Complete |
 | GPX import | Planned |
 | Garmin / TrainingPeaks sync | Planned, provider approval required |
 
@@ -29,6 +31,14 @@ paceline init
 ```
 
 `init` creates `~/.paceline/.env` with a new local encryption key and a private local database. It never uploads this file or its contents.
+
+Set known training thresholds locally to enable zone analysis. The profile is encrypted in the same local database as activities:
+
+```sh
+paceline profile set --ftp-watts 250 --max-heart-rate 180
+```
+
+Add `--lthr 160` when you know lactate-threshold heart rate; PaceLine uses it in preference to maximum heart rate for HR zones. Run `paceline profile` at any time to view the stored profile and calculated zones.
 
 Run a safe configuration check at any time:
 
@@ -103,6 +113,7 @@ See [SECURITY.md](SECURITY.md) for reporting guidance.
 - Exact and probable duplicate detection.
 - Local duration, distance, load, CTL, ATL, TSB, and period comparison when source data or configured FTP supports it.
 - Read-only MCP tools for recent training, individual activities, summaries, and training load.
+- Local athlete profile, calculated power/heart-rate zones, and time-in-zone distribution when valid thresholds and timestamped samples are available.
 
 Advanced and experimental provider-adapter notes are in [docs/EXPERIMENTAL.md](docs/EXPERIMENTAL.md). The local file-import workflow above is the supported local workflow.
 
@@ -115,6 +126,9 @@ Advanced and experimental provider-adapter notes are in [docs/EXPERIMENTAL.md](d
 | `get_local_training_summary` | Aggregate local duration, distance, and available training stress |
 | `get_training_load` | Calculate weekly volume and available CTL, ATL, and TSB from local FIT/TCX imports |
 | `compare_training_periods` | Compare recent and preceding local periods by volume and available load |
+| `get_athlete_profile` | Read the encrypted local thresholds PaceLine uses for analysis |
+| `get_training_zones` | Read available power and heart-rate zones without inventing a threshold |
+| `get_intensity_distribution` | Calculate local power/HR time in zones and easy/moderate/hard power distribution |
 
 ## Roadmap
 
@@ -122,7 +136,8 @@ Advanced and experimental provider-adapter notes are in [docs/EXPERIMENTAL.md](d
 - TCX import — complete.
 - First derived metrics and local load analysis — complete.
 - GPX route import — planned.
-- Power/heart-rate zone configuration and distributions — planned.
+- Activity comparison and similar-workout analysis — planned.
+- Personal records, progression, and performance trends — planned.
 - Official Garmin and TrainingPeaks integrations — planned, subject to provider approval.
 - Optional hosted sync and remote MCP endpoint — future.
 

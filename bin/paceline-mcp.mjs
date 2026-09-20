@@ -30,6 +30,8 @@ const printHelp = () => console.log(`PaceLine Local MCP
 Usage:
   paceline init                Create private local configuration and encryption key
   paceline doctor              Check local setup without exposing credentials
+  paceline profile             Show the encrypted local athlete profile and zones
+  paceline profile set ...     Set local thresholds, e.g. --ftp-watts 250 --max-heart-rate 180
   paceline import <path>       Import one FIT/TCX file or a folder of activities
   paceline serve               Start the MCP server over stdio
 
@@ -94,7 +96,28 @@ if (command === "init") {
     process.exitCode = 1;
   }
 } else if (command === "serve") {
-  start(resolve(packageRoot, "src", "trainingpeaks-server.js"));
+  start(resolve(packageRoot, "src", "paceline-server.js"));
+} else if (command === "profile") {
+  try {
+    loadConfiguration();
+    const { getAthleteProfile, updateAthleteProfile } = await import("../src/athlete-profile.js");
+    if (process.argv[3] && process.argv[3] !== "set") throw new Error("Usage: paceline profile [set --ftp-watts 250 --max-heart-rate 180 --lthr 160 --resting-heart-rate 50 --weight-kg 70]");
+    if (process.argv[3] === "set") {
+      const names = { "--ftp-watts": "ftpWatts", "--max-heart-rate": "maxHeartRate", "--resting-heart-rate": "restingHeartRate", "--lthr": "lactateThresholdHeartRate", "--weight-kg": "weightKg" };
+      const patch = {};
+      for (let index = 4; index < process.argv.length; index += 2) {
+        const field = names[process.argv[index]];
+        const value = Number(process.argv[index + 1]);
+        if (!field || !Number.isFinite(value) || value <= 0) throw new Error("Use named positive values, for example: paceline profile set --ftp-watts 250 --max-heart-rate 180");
+        patch[field] = value;
+      }
+      if (!Object.keys(patch).length) throw new Error("Provide at least one profile value to set.");
+      console.log(JSON.stringify(updateAthleteProfile(patch), null, 2));
+    } else console.log(JSON.stringify(getAthleteProfile(), null, 2));
+  } catch (error) {
+    console.error(error instanceof Error ? error.message : String(error));
+    process.exitCode = 1;
+  }
 } else {
   printHelp();
   if (command !== "help" && command !== "--help" && command !== "-h") process.exitCode = 1;
