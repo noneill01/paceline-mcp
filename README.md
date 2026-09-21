@@ -4,6 +4,8 @@
 
 PaceLine Local is an early-stage, local-first MCP server for endurance-training data. It is for athletes and developers who want to import their own activity files, keep them on their own computer, and analyse them through MCP-compatible AI clients.
 
+The source repository is public, but the package is deliberately marked private in `package.json` until a reviewed npm distribution is ready. Install it from this repository; do not expect `npm install -g paceline-mcp` yet.
+
 It currently imports FIT and TCX files, stores canonical activity data locally, detects duplicate imports, and exposes training summaries and load analysis. It is not a hosted service, a medical device, or a production provider-sync product.
 
 | Capability | Status |
@@ -15,6 +17,7 @@ It currently imports FIT and TCX files, stores canonical activity data locally, 
 | First derived load metrics | Complete |
 | Athlete profile and zones | Complete |
 | Power / HR time in zones | Complete |
+| Date-bounded training-block analysis | Complete |
 | GPX import | Planned |
 | Garmin / TrainingPeaks sync | Planned, provider approval required |
 
@@ -129,6 +132,15 @@ Advanced and experimental provider-adapter notes are in [docs/EXPERIMENTAL.md](d
 | `get_athlete_profile` | Read the encrypted local thresholds PaceLine uses for analysis |
 | `get_training_zones` | Read available power and heart-rate zones without inventing a threshold |
 | `get_intensity_distribution` | Calculate local power/HR time in zones and easy/moderate/hard power distribution |
+| `analyse_training_block` | Analyse a chosen date range and compare it with the preceding equal-length period |
+
+For example, after importing your files, ask an MCP client to call:
+
+```text
+analyse_training_block({ from: "2026-09-01", to: "2026-09-30", sport: "ride" })
+```
+
+The response gives deterministic volume, available load, weekly pattern, intensity distribution, long/high-load sessions, and changes against the preceding 30 days. The AI client can explain those facts, but PaceLine does not manufacture missing physiological inputs.
 
 ## Roadmap
 

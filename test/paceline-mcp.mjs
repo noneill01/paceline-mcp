@@ -10,9 +10,9 @@ const client = new Client({ name: "paceline-local-smoke-test", version: "0.1.1" 
 try {
   await client.connect(transport);
   const { tools } = await client.listTools();
-  assert.deepEqual(tools.map((tool) => tool.name).sort(), ["compare_training_periods", "get_activity", "get_athlete_profile", "get_intensity_distribution", "get_local_training_summary", "get_recent_training", "get_training_load", "get_training_zones"]);
+  assert.deepEqual(tools.map((tool) => tool.name).sort(), ["analyse_training_block", "compare_training_periods", "get_activity", "get_athlete_profile", "get_intensity_distribution", "get_local_training_summary", "get_recent_training", "get_training_load", "get_training_zones"]);
   assert.ok(tools.every((tool) => tool.annotations?.readOnlyHint !== false), "local tools must not advertise write access");
-  console.log("PaceLine local MCP smoke test passed: eight read-only local analysis tools discovered.");
+  console.log("PaceLine local MCP smoke test passed: nine read-only local analysis tools discovered.");
 } finally {
   await transport.close();
 }

@@ -51,7 +51,7 @@ export function openLocalActivityStore({ databasePath = process.env.PACELINE_ACT
       return { imported: true, activityCount: activities.length, probableDuplicates };
     },
     listActivities({ limit = 50 } = {}) {
-      const safeLimit = Math.max(1, Math.min(Number(limit) || 50, 500));
+      const safeLimit = Math.max(1, Math.min(Number(limit) || 50, 5_000));
       return database.prepare("SELECT payload FROM activities ORDER BY started_at DESC LIMIT ?").all(safeLimit).map((row) => decrypt(row.payload, key));
     },
     getActivity(id) {

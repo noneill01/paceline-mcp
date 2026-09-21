@@ -2,6 +2,7 @@ import { openLocalActivityStore } from "./local-activity-store.js";
 import { analyseTraining, compareTrainingPeriods } from "./training-engine.js";
 import { getAthleteProfile, trainingZones } from "./athlete-profile.js";
 import { periodIntensityDistribution } from "./zones.js";
+import { analyseTrainingBlock } from "./training-block.js";
 
 export function getLocalActivities(limit = 50) {
   const store = openLocalActivityStore();
@@ -64,4 +65,10 @@ export function getLocalIntensityDistribution(days = 42, sport = undefined) {
   const activities = getLocalActivities(500).activities.filter((activity) => new Date(activity.startedAt).getTime() >= cutoff && (!sport || activity.sport === sport));
   const profile = getAthleteProfile().profile;
   return { source: "PaceLine Local", periodDays: days, sport: sport ?? null, ...periodIntensityDistribution(activities, profile) };
+}
+
+export function getLocalTrainingBlock({ from, to, sport = undefined }) {
+  const activities = getLocalActivities(5_000).activities;
+  const profile = getAthleteProfile().profile;
+  return { source: "PaceLine Local", ...analyseTrainingBlock(activities, { from, to, sport, profile }) };
 }

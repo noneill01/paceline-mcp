@@ -7,6 +7,7 @@ import {
   getLocalActivity,
   getLocalAthleteProfile,
   getLocalIntensityDistribution,
+  getLocalTrainingBlock,
   getLocalTrainingLoad,
   getLocalTrainingSummary,
   getLocalTrainingZones
@@ -23,5 +24,6 @@ server.tool("compare_training_periods", "Compare recent and preceding local peri
 server.tool("get_athlete_profile", "Return the encrypted, local-only athlete profile and the thresholds PaceLine can defensibly use. Read-only.", {}, async () => respond(getLocalAthleteProfile()));
 server.tool("get_training_zones", "Return configured or profile-derived power and heart-rate zones. Values remain unavailable when no threshold is configured. Read-only.", {}, async () => respond(getLocalTrainingZones()));
 server.tool("get_intensity_distribution", "Return local power and heart-rate time-in-zone distribution for a period. Power intensity is grouped as easy, moderate, and hard only when timestamped samples and zones are available. Read-only.", { days: z.number().int().min(1).max(365).optional(), sport: z.enum(["ride", "run", "swim", "strength", "other"]).optional() }, async ({ days, sport }) => respond(getLocalIntensityDistribution(days, sport)));
+server.tool("analyse_training_block", "Analyse a bounded local training block: volume, load, weekly pattern, intensity distribution, highlights, and comparison with the preceding equal-length period. Values are unavailable when inputs are insufficient. Read-only.", { from: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).describe("Inclusive ISO start date, for example 2026-09-01"), to: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).describe("Inclusive ISO end date, for example 2026-09-30"), sport: z.enum(["ride", "run", "swim", "strength", "other"]).optional() }, async ({ from, to, sport }) => respond(getLocalTrainingBlock({ from, to, sport })));
 
 await server.connect(new StdioServerTransport());
