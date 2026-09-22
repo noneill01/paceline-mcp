@@ -1,5 +1,6 @@
 import { activityLoad } from "./training-engine.js";
 import { periodIntensityDistribution } from "./zones.js";
+import { resolveProbableActivityDuplicates } from "./activity-fingerprint.js";
 
 const dayMs = 86_400_000;
 const round = (value) => Math.round(value * 10) / 10;
@@ -60,9 +61,13 @@ export function analyseTrainingBlock(allActivities, { from, to, sport = undefine
     const time = new Date(activity.startedAt).getTime();
     return time >= minimum && time < maximum && (!sport || activity.sport === sport);
   });
-  const activities = select(fromTime, toTime);
+  const currentRecords = select(fromTime, toTime);
   const durationDays = Math.round((toTime - fromTime) / dayMs);
-  const previous = select(fromTime - durationDays * dayMs, fromTime);
+  const previousRecords = select(fromTime - durationDays * dayMs, fromTime);
+  const currentResolution = resolveProbableActivityDuplicates(currentRecords);
+  const previousResolution = resolveProbableActivityDuplicates(previousRecords);
+  const activities = currentResolution.activities;
+  const previous = previousResolution.activities;
   const currentSummary = summary(activities, profile.ftpWatts);
   const previousSummary = summary(previous, profile.ftpWatts);
   const intensity = periodIntensityDistribution(activities, profile);
@@ -70,10 +75,13 @@ export function analyseTrainingBlock(allActivities, { from, to, sport = undefine
   const rankedByLoad = activities.map((activity) => ({ activity, ...activityLoad(activity, profile.ftpWatts) })).filter((entry) => entry.value != null).sort((left, right) => right.value - left.value);
   return {
     period: { from, to, days: durationDays, sport: sport ?? null },
+    importedRecordCount: currentResolution.importedRecordCount,
+    uniqueActivityCount: activities.length,
+    excludedProbableDuplicates: currentResolution.excludedProbableDuplicates,
     ...currentSummary,
     weekly: weeklySummary(activities, profile.ftpWatts),
     intensity,
-    comparisonWithPreviousPeriod: { period: { from: day(fromTime - durationDays * dayMs), to: day(fromTime - dayMs) }, summary: previousSummary, change: changes(currentSummary, previousSummary) },
+    comparisonWithPreviousPeriod: { period: { from: day(fromTime - durationDays * dayMs), to: day(fromTime - dayMs) }, importedRecordCount: previousResolution.importedRecordCount, uniqueActivityCount: previous.length, excludedProbableDuplicates: previousResolution.excludedProbableDuplicates, summary: previousSummary, change: changes(currentSummary, previousSummary) },
     highlights: {
       longestActivity: rankedByDuration[0] ? { activityId: rankedByDuration[0].id, startedAt: rankedByDuration[0].startedAt, sport: rankedByDuration[0].sport, durationSeconds: rankedByDuration[0].durationSeconds, distanceMeters: rankedByDuration[0].distanceMeters } : null,
       highestLoadActivity: rankedByLoad[0] ? { activityId: rankedByLoad[0].activity.id, startedAt: rankedByLoad[0].activity.startedAt, sport: rankedByLoad[0].activity.sport, load: round(rankedByLoad[0].value), loadSource: rankedByLoad[0].source } : null

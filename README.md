@@ -140,7 +140,7 @@ For example, after importing your files, ask an MCP client to call:
 analyse_training_block({ from: "2026-09-01", to: "2026-09-30", sport: "ride" })
 ```
 
-The response gives deterministic volume, available load, weekly pattern, intensity distribution, long/high-load sessions, and changes against the preceding 30 days. The AI client can explain those facts, but PaceLine does not manufacture missing physiological inputs.
+The response gives deterministic volume, available load, weekly pattern, intensity distribution, long/high-load sessions, and changes against the preceding 30 days. It resolves probable duplicate exports before analysis and reports both the imported-record count and the retained canonical activities. The AI client can explain those facts, but PaceLine does not manufacture missing physiological inputs.
 
 ## Roadmap
 
